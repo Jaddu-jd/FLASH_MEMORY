@@ -217,7 +217,7 @@ uint32_t GET_SubSector_Address_32KB(uint16_t sector_num);
 uint32_t GET_SubSector_Address_4KB(uint16_t sector_num);
 
 uint8_t Read_Byte(uint32_t address);
-void Read_ID(uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR);
+void Read_ID(volatile uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR);
 
 int8_t Status_Reg_Read();
 

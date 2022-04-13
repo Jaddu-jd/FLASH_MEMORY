@@ -107,7 +107,7 @@ void Write_Byte(uint32_t address, uint8_t data) {
 
 	SET_FMCS();			// Pulling CS pin back high
 
-//	Write_Disable(); 	// Disabling the Write Mode of Flash Memory
+	Write_Disable(); 	// Disabling the Write Mode of Flash Memory
 	return;
 }
 
@@ -211,7 +211,7 @@ uint8_t Read_Byte(uint32_t address) {
  *
  */
 
-void Read_ID(uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR) {
+void Read_ID(volatile uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR) {
 	DEV_ID_DATA BUFF;
 	uint8_t command;
 	command = READ_ID & 0xFF;
@@ -222,7 +222,7 @@ void Read_ID(uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR) {
 	HAL_Delay(1);
 	HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);	// read ID command (0x9E)
 	HAL_Delay(1);
-	HAL_SPI_Receive(&FM_SPI, pRxBuff, 20, 1000);
+	HAL_SPI_Receive(&FM_SPI, (uint8_t*) pRxBuff, 20, 1000);
 	HAL_Delay(1);
 	/////////////////////////////////////////////////////////////////////////
 	SET_FMCS();			// Pulling the CS Pin High
@@ -283,17 +283,17 @@ uint16_t Read_Register(uint8_t command) {
 		///////////////////////////////////////////////////////////////////////////
 		HAL_Delay(1);
 		SET_FMCS();
-		reg_data = data_buf[0] << 8 & 0xFF | data_buf[1];
+		reg_data = (data_buf[0] << 8 & 0xFF) | data_buf[1];
 		return reg_data;
 	} else {
 
-		uint8_t data;
+		uint8_t data = 0;
 
 		RESET_FMCS();
 		HAL_Delay(1);
 		///////////////////////////////////////////////////////////////////////////
 		HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);// Sector Erase Command (0xDC)
-		HAL_SPI_Receive(&FM_SPI, data, 1, 100);	// Address to erase the sector of
+		HAL_SPI_Receive(&FM_SPI, &data, 1, 100);// Address to erase the sector of
 		///////////////////////////////////////////////////////////////////////////
 		HAL_Delay(1);
 		SET_FMCS();
@@ -317,25 +317,29 @@ uint16_t Read_Register(uint8_t command) {
 void Transfer_Data_256Bytes_FM(uint32_t ADDRESS, uint8_t port_num) {
 	uint8_t i = 0;
 	uint8_t temp;
+	uint8_t Data_Buff[256];
 	switch (port_num) {
 #ifdef DEBUG_MODE
 #ifdef TRAACE_MODE
 #else
 	case 1:
 		myprintf("\nReading data from Flash\n");
+#endif
+#endif
 		for (i = 0; i < 256; i++) {
-			CDC_Transmit_FS(Read_Byte(ADDRESS), 1);
+			Data_Buff[i] = Read_Byte(ADDRESS);
 			ADDRESS++;
 		}
+
 #ifdef DEBUG_MODE
 #ifdef TRACE_MODE
 #else
+		CDC_Transmit_FS(Data_Buff, 256);
+		myprintf("\n");
 		myprintf("Data Transfer Completed\n");
 #endif
 #endif
 		break;
-#endif
-#endif
 	case 2:
 #ifdef DEBUG_MODE
 #ifdef TRACE_MODE
