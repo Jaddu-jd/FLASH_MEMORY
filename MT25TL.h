@@ -9,11 +9,7 @@
 #ifndef MT25TL_H_
 #define MT25TL_H_
 
-#include <main.h>
-#include "common_func.h"
-extern SPI_HandleTypeDef hspi2;
-
-#define FM_SPI hspi2
+#include "main.h"
 
 //command codes  definition for MT25TL Flash memory
 
@@ -175,41 +171,11 @@ typedef struct {
 }DEV_ID_DATA;
 
 /* Functions for FLASH OPERATIONS */
-static void SET_FMCS(){
-	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin,GPIO_PIN_SET);
-	HAL_Delay(10);
-}
+void SET_FMCS();
+void RESET_FMCS();
 
-static void RESET_FMCS(){
-	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin, GPIO_PIN_RESET);
-	HAL_Delay(10);
-}
-
-/*
- *@brief function sets the Flash memory in write enable mode
- *
- *@retval null
- *
- *@param null
- *
- */
-static void Write_Enable(){
-	uint8_t command = WRITE_ENABLE&0xFF;
-		RESET_FMCS();
-		HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
-		SET_FMCS();
-}
-
-static void Write_Disable(){
-	uint8_t command = WRITE_DISABLE;
-	RESET_FMCS();
-	HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
-	SET_FMCS();
-}
-
-void Memory_Erase();
 void Erase_Sector_FM(uint32_t Sector_address, uint8_t Sector_Size);
-
+void Erase_Die();
 
 void Write_Byte(uint32_t address, uint8_t data);
 uint32_t GET_Sector_Address(uint16_t sector_num);
@@ -221,7 +187,6 @@ void Read_ID(volatile uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR);
 
 int8_t Status_Reg_Read();
 
-void Transfer_Data_256Bytes_FM(uint32_t ADDRESS, uint8_t port_num);
 
 uint16_t Read_Register(uint8_t command);
 

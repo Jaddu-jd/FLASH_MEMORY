@@ -8,30 +8,37 @@
 extern DEV_ID_DATA FM1_ID;
 
 /*
- * @brief	Erases the Initial 5 Sectors of the memory
+ *@brief function sets the Flash memory in write enable mode
  *
- * @param	none
- * @retval	none
+ *@retval null
+ *
+ *@param null
+ *
  */
-
-void Memory_Erase() {
-	//ERASE Start
-	Erase_Sector_FM(0, 64);
-	for (uint8_t num = 0; num < 5; num++) {
-		Erase_Sector_FM(FLAG_DATA_ADDRESS + SECT * num, 64);
-		Erase_Sector_FM(SSD_MSN_ADDRESS + SECT * num, 64);
-		Erase_Sector_FM(PX4_MSN_ADDRESS + SECT * num, 64);
-		Erase_Sector_FM(HK_ADDRESS + SECT * num, 64);
-		Erase_Sector_FM(SYS_LOG + SECT * num, 64);
-	}
-	FLAG_DATA_ADDRESS = SECT * 1;
-	PX4_MSN_ADDRESS = SECT * 2;
-	SSD_MSN_ADDRESS = SECT * 203;
-	HK_ADDRESS = SECT * 404;
-	SYS_LOG = SECT * 905;
-	Store_Address_Data_to_Flash();
+static void Write_Enable(){
+	uint8_t command = WRITE_ENABLE&0xFF;
+		RESET_FMCS();
+		HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
+		SET_FMCS();
 }
 
+
+static void Write_Disable(){
+	uint8_t command = WRITE_DISABLE;
+	RESET_FMCS();
+	HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
+	SET_FMCS();
+}
+
+void SET_FMCS(){
+	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin,GPIO_PIN_SET);
+	HAL_Delay(10);
+}
+
+void RESET_FMCS(){
+	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin, GPIO_PIN_RESET);
+	HAL_Delay(10);
+}
 /*
  * @brief		erases the specified sector
  *
@@ -74,6 +81,14 @@ void Erase_Sector_FM(uint32_t Sector_address, uint8_t Sector_Size) {
 	SET_FMCS();		// Setting CS pin back high
 	HAL_Delay(5);
 	return;
+}
+/*
+ * @brief	Erases the die of the Flash Memory
+ * @param	none
+ * @retval	none
+ */
+void Erase_Die(){
+
 }
 
 /*
@@ -302,64 +317,3 @@ uint16_t Read_Register(uint8_t command) {
 	}
 
 }
-
-/*
- * @brief	Transfers 256 bytes of data starting from the given address to provided com port
- *
- * @param	Address		32-bit address of Starting memory location
- * @param	port_num	number indicating the port to which the data is to be transferred to
- * 				1: PC (via USB)
- * 				2: OBC (via I2C)
- *
- * @retval	none
- */
-
-void Transfer_Data_256Bytes_FM(uint32_t ADDRESS, uint8_t port_num) {
-	uint8_t i = 0;
-	uint8_t temp;
-	uint8_t Data_Buff[256];
-	switch (port_num) {
-#ifdef DEBUG_MODE
-#ifdef TRAACE_MODE
-#else
-	case 1:
-		myprintf("\nReading data from Flash\n");
-#endif
-#endif
-		for (i = 0; i < 256; i++) {
-			Data_Buff[i] = Read_Byte(ADDRESS);
-			ADDRESS++;
-		}
-
-#ifdef DEBUG_MODE
-#ifdef TRACE_MODE
-#else
-		CDC_Transmit_FS(Data_Buff, 256);
-		myprintf("\n");
-		myprintf("Data Transfer Completed\n");
-#endif
-#endif
-		break;
-	case 2:
-#ifdef DEBUG_MODE
-#ifdef TRACE_MODE
-#else
-		myprintf("Reading data and transferring to OBC.\n");
-#endif
-#endif
-		for (i = 0; i < 256; i++) {
-			temp = Read_Byte(ADDRESS);
-			HAL_I2C_Slave_Receive(&hi2c1, &temp, 1, 5000);
-			ADDRESS++;
-		}
-#ifdef DEBUG_MODE
-#ifdef TRACE_MODE
-#else
-		myprintf("Data Transfer Completed\n");
-#endif
-#endif
-		break;
-	}
-	return;
-}
-
