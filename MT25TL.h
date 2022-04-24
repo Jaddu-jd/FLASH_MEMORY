@@ -1,4 +1,4 @@
- /*
+/*
  * MT25TL.h
  *
  *  Created on: Aug 12, 2021
@@ -148,17 +148,14 @@
 /*COMMANDS OF MT25TL END */
 
 //Sectors ADDRESSES for FLASH MEMORY of DIFF SECTOR
-
 #define FMSector0_start 0x00
 #define FMSector_size 0xFFFF
 
 #define FMSubSector0_32KB_start 0x00
 #define FMSubSector_32KB_size 0x7FFF
 
-
 #define FMSubSector0_4KB_start 0x00
 #define FMSubSector_4KB_size 0x0FFF
-
 
 typedef struct {
 	uint8_t MFR_ID;
@@ -168,7 +165,7 @@ typedef struct {
 	uint8_t EXTENDED_DEV_ID;
 	uint8_t DEV_CONF_INFO;
 	uint8_t UID_CODE[14];
-}DEV_ID_DATA;
+} DEV_ID_DATA;
 
 /* Functions for FLASH OPERATIONS */
 void SET_FMCS();
@@ -187,9 +184,6 @@ void Read_ID(volatile uint8_t *pRxBuff, DEV_ID_DATA *pDEV_STR);
 
 int8_t Status_Reg_Read();
 
-
 uint16_t Read_Register(uint8_t command);
-
-
 
 #endif /* MT25TL_H_ */

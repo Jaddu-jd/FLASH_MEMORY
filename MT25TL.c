@@ -15,27 +15,26 @@ extern DEV_ID_DATA FM1_ID;
  *@param null
  *
  */
-static void Write_Enable(){
-	uint8_t command = WRITE_ENABLE&0xFF;
-		RESET_FMCS();
-		HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
-		SET_FMCS();
+static void Write_Enable() {
+	uint8_t command = WRITE_ENABLE & 0xFF;
+	RESET_FMCS();
+	HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
+	SET_FMCS();
 }
 
-
-static void Write_Disable(){
+static void Write_Disable() {
 	uint8_t command = WRITE_DISABLE;
 	RESET_FMCS();
 	HAL_SPI_Transmit(&FM_SPI, &command, 1, 100);
 	SET_FMCS();
 }
 
-void SET_FMCS(){
-	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin,GPIO_PIN_SET);
+void SET_FMCS() {
+	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin, GPIO_PIN_SET);
 	HAL_Delay(10);
 }
 
-void RESET_FMCS(){
+void RESET_FMCS() {
 	HAL_GPIO_WritePin(FM_CS_GPIO_Port, FM_CS_Pin, GPIO_PIN_RESET);
 	HAL_Delay(10);
 }
@@ -87,7 +86,7 @@ void Erase_Sector_FM(uint32_t Sector_address, uint8_t Sector_Size) {
  * @param	none
  * @retval	none
  */
-void Erase_Die(){
+void Erase_Die() {
 
 }
 
