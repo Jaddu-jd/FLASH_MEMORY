@@ -9,7 +9,7 @@
 #ifndef MT25TL_H_
 #define MT25TL_H_
 
-#include "main.h"
+#include "config_sys.h"
 
 //command codes  definition for MT25TL Flash memory
 
